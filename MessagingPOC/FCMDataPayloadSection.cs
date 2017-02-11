@@ -26,11 +26,12 @@ namespace MessagingPOC
         protected PushMessageDataPayloadTypeEnum _type = PushMessageDataPayloadTypeEnum.None;
         public FCMDataPayloadSection(String titleArg, String contentArg, PushMessageDataPayloadTypeEnum typeArg, int msgIndex)
         {
+            msg_index = msgIndex.ToString();
             _type = typeArg;
-            title = titleArg + " Index = " + msgIndex;
-            content = contentArg + " Index = " + msgIndex;
+            title = titleArg ;
+            content = contentArg ;
             type = typeArg.ToString();
-            dry_run = "false";
+            dry_run = "true";
             DataSection = new Dictionary<String, String>();
 
             if (String.IsNullOrEmpty(registration_ids) == false)
@@ -56,8 +57,10 @@ namespace MessagingPOC
 
             if (String.IsNullOrEmpty(bigImageurl) == false)
                 DataSection.Add("bigImageurl", bigImageurl);
-             
 
+            if (String.IsNullOrEmpty(msg_index) == false)
+                DataSection.Add("msg_index", msg_index);
+             
         }
 
         public void SetRegistrationIds(String[] ids)
@@ -113,6 +116,9 @@ namespace MessagingPOC
                
         }
 
+        
+       
+
         #region Properties
         public string to { get; set; }
         public string registration_ids { get; set; }
@@ -125,6 +131,8 @@ namespace MessagingPOC
         public string customer_ids { get; set; }
 
         public string veryLongText { get; set; }
+
+         public String msg_index { get; set; }
         #endregion
     }
 }

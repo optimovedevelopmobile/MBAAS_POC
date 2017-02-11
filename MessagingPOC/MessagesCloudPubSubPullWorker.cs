@@ -153,6 +153,7 @@ namespace MessagingPOC
            //     Console.WriteLine($"Received message {msg.MessageId} published at {msg.PublishTime.ToDateTime()}");
            //    Console.WriteLine($"Text: '{msg.Data.ToStringUtf8()}'");
                 string jsonMsg = msg.Data.ToStringUtf8();
+                                      
                 _redisDB.ListLeftPush(PendingQueue, jsonMsg);
 
                 // var currValue = _redisDB.ListRightPop("Pending");

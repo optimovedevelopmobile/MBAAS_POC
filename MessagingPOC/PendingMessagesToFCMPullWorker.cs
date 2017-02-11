@@ -3,9 +3,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 // Imports the Google Cloud client library
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 
 
@@ -18,6 +20,8 @@ namespace MessagingPOC
         #region Members
 
         #region Redis
+
+      
         protected static ConnectionMultiplexer _redis = null;
         protected static IDatabase _redisDB = null;
         protected static string PendingQueue = "Pending";
@@ -80,6 +84,8 @@ namespace MessagingPOC
             _redis = ConnectionMultiplexer.Connect(DefaultRedisServerAddress);
             _redisDB = _redis.GetDatabase();
 
+            _ctSourceProcessTask = new CancellationTokenSource[_numOfThreads];
+            _ctProcessTaskToken = new CancellationToken[_numOfThreads];
 
             return bStatus;
         }
@@ -93,23 +99,23 @@ namespace MessagingPOC
              Console.WriteLine("Entering ActivatePullingTasks");
             bool bStatus = false;
 
-            _ctSourceProcessTask = new CancellationTokenSource[_numOfThreads];
-            _ctProcessTaskToken = new CancellationToken[_numOfThreads];
+           
 
-            _ctSourcePullTask = new CancellationTokenSource[_numOfThreads];
-            _ctPullTaskToken = new CancellationToken[_numOfThreads];
+            _ctSourcePullTask = new CancellationTokenSource[2];
+            _ctPullTaskToken = new CancellationToken[2];
 
             try
-            {
-
-                 
-                Task[] tasks = new Task[1];
-                 _ctSourcePullTask[0] = new CancellationTokenSource();
-                 _ctPullTaskToken[0] =  _ctSourcePullTask[0].Token;
-                var currToken =  _ctSourcePullTask[0].Token;
-                tasks[0] = Task.Factory.StartNew(() => PullMessagesFromRedisTaskAsync(currToken));
-
-                Task.WaitAll(tasks);                
+            {                               
+                
+                  for(int ind=0; ind < _numOfThreads; ind++)
+                  {
+                    _ctSourceProcessTask[ind] = new CancellationTokenSource();
+                    _ctProcessTaskToken[ind] =  _ctSourceProcessTask[ind].Token;
+                    var currToken =  _ctProcessTaskToken[ind];
+                    _processingTasks[ind] = Task.Factory.StartNew( () =>   PullMessagesFromRedisTaskAsync(currToken) );
+                  }
+                
+                Task.WaitAll(_processingTasks);                
 
                
                             
@@ -118,7 +124,7 @@ namespace MessagingPOC
             }
             catch (Exception error)
             {
-                Console.WriteLine("Failed Pulling From Redis:\n" + error.Message);
+                Console.WriteLine("Failed ActivatePullingTasks Initiate Tasks:\n" + error.Message);
                 throw;
             }
             return bStatus;
@@ -150,21 +156,35 @@ namespace MessagingPOC
         /// </summary>
         /// <param name="ct">The ct.</param>
         /// 
-        protected static async void PullMessagesFromRedisTaskAsync(CancellationToken ct)
+        protected static async Task<bool> PullMessagesFromRedisTaskAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
 
-            var length = _redisDB.ListLength(PendingQueue);
-            if (length == 0)
-            {
-                Thread.Sleep(10);
-            }
-            else
-            {
-                var b = await PullMessagedFromPubSubAsync(ct);
+            try{
+
+                long length = 0;
+                
+                  lock(_redisOperationLock){
+                     length = _redisDB.ListLength(PendingQueue);
+                    }
+                if (length == 0)
+                {
+                    Thread.Sleep(10);
+                }
+                else
+                {
+                    var b = await PullMessagedFromPubSubAsync(ct);
+                    Console.WriteLine("Exiting PullMessagesFromRedisTaskAsync ");
+                }
+
+            }catch(Exception e) {
+                    Console.WriteLine("PullMessagesFromRedisTaskAsync Faile" + e.Message);
             }
 
+            return true;
         }
+    
+                      
 
         /// <summary>
         /// Pulls the messaged from pub sub.
@@ -173,28 +193,100 @@ namespace MessagingPOC
         protected static async Task<bool> PullMessagedFromPubSubAsync(CancellationToken ct)
         {
             bool bStatus = true;
-            var fcm = new FCMTester();
+         
+            FirebaseTestSender.Init();
             var firebasenet = new FirebaseTestSender();
             Stopwatch stopWatch = new Stopwatch();
           
-                var length = _redisDB.ListLength(PendingQueue);
+                long length = 0;
+               
+               lock(_redisOperationLock){
+                     length = _redisDB.ListLength(PendingQueue);
+                    }
                 long numOfMsg = length - 1;
-
+                RedisValue message = new RedisValue();
                 while (length > 0)
-                {
+                {                                        
+                    
+                    lock(_redisOperationLock){
+                        length = _redisDB.ListLength(PendingQueue);
+                        if(length >= 1)
+                        {
+                            message =  _redisDB.ListRightPop(PendingQueue);                            
+                        }
+                    }
+                    if(length >= 1){                        
+                        Dictionary<String, String>  convertedMessage = null;
+                        String[] recievedRegistration_ids;
+                        bool converted = ConvertMessageWithTokens(message, out convertedMessage, out recievedRegistration_ids);
+                        await firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids);
 
-                    RedisValue v = _redisDB.ListRightPop(PendingQueue);
-                  
-                   firebasenet.SenderDataToFirebaseAsync(v.ToString());
-                  
-                    length = _redisDB.ListLength(PendingQueue);
+                    }
+                                        
+                   lock(_redisOperationLock){
+                     length = _redisDB.ListLength(PendingQueue);
+                    }                                      
                    
                 }
-            
-                Console.WriteLine("Exit PullMessagedFromPubSubAsync");
+
+                while(true)
+                {
+                    bool isFinished = CheckMessagesStatus();  
+                    if(isFinished)
+                        break;
+                        Thread.Sleep(50);
+                }
+                
+                                                           
                 return  bStatus;
         }
-        
+
+        private static bool CheckMessagesStatus()
+        {
+            bool isFinished = false;
+
+            if(FirebaseTestSender.MessagesStatus.Count > 0)
+            {
+                isFinished = ! FirebaseTestSender.MessagesStatus.Values.Contains(false);
+               
+            }
+           return isFinished;
+        }
+
+        private static bool ConvertMessageWithTokens(RedisValue message, out Dictionary<String, String> convertedMessage,  out String[] recievedRegistration_ids)
+        {
+            bool bStatus = true;
+
+            convertedMessage = null;
+
+            var dataPayloadDictionary = JsonConvert.DeserializeObject<Dictionary<String, String> >(message);
+            var customerIds = dataPayloadDictionary["customer_ids"];
+            char[] delimiterChars = { ','};
+            String[] tokens = customerIds.Split(delimiterChars);
+            recievedRegistration_ids = new String[tokens.Length];
+                        
+            int index = 0;
+            foreach (var customerIdStr  in tokens)
+            {
+                var customerId = Convert.ToInt64(customerIdStr);
+                String customerToken = String.Empty;
+                var found = GetCutomerTokenById(customerId, out customerToken);
+                recievedRegistration_ids[index] = customerToken;
+                index++;
+            } 
+          
+            dataPayloadDictionary.Remove("customer_ids");          
+            convertedMessage = dataPayloadDictionary;
+            
+        return bStatus;
+        }
+
+        private static bool GetCutomerTokenById(long customerId, out string customerToken)
+        {
+            customerToken = RegistrationId;
+            return true;
+        }
+
 
 
         #endregion

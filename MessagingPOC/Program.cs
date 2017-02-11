@@ -19,8 +19,8 @@ namespace ConsoleApplication
             Stopwatch stopWatchAll = new Stopwatch();
             Stopwatch stopWatch = new Stopwatch();
             int numOfPublishThreads = 1;
-            int numOfMessagesPerThread = 100;
-            int numOfUsersIdPerMessage = 50;
+            int numOfMessagesPerThread = 10;
+            int numOfUsersIdPerMessage = 100;
             String serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
 
             var pubFCM = new PublishPushMesssages();
@@ -29,33 +29,42 @@ namespace ConsoleApplication
             pubFCM.InstantiatePublishMsgsTasks(numOfPublishThreads, numOfMessagesPerThread, numOfUsersIdPerMessage, "the Msg");
             stopWatch.Stop();
             Console.WriteLine("Publish to Pubsub Miliseconds = " + stopWatch.ElapsedMilliseconds);
-
-            stopWatch.Start();
+            Console.WriteLine(" AFter Publish to PubSub");
+            Stopwatch stopWatchRedis = new Stopwatch();
+            stopWatchRedis.Start();
             var pullWorker = new MessagesCloudPubSubPullWorker();
             pullWorker.InitializePullWorker();
             pullWorker.StartPullingFromCloudPubSub(numOfPublishThreads * numOfMessagesPerThread);
-            stopWatch.Stop();
-            Console.WriteLine("Read and Insert into Redis Miliseconds = " + stopWatch.ElapsedMilliseconds);
+            stopWatchRedis.Stop();
+            Console.WriteLine("Read and Insert into Redis Miliseconds = " + stopWatchRedis.ElapsedMilliseconds);
+            Console.WriteLine(" AFter Read PubSub Into Redis");
 
-            stopWatch.Start();
+             Stopwatch stopWatchFcm = new Stopwatch();
+            stopWatchFcm.Start();
             var pullWorkerToFCM = new PendingMessagesToFCMPullWorker();
             pullWorkerToFCM.InitializePullWorker(1, 10);
             pullWorkerToFCM.ActivatePullingTasks();
-            stopWatch.Stop();
-            Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatch.ElapsedMilliseconds);
+            stopWatchFcm.Stop();
+            Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatchFcm.ElapsedMilliseconds);
 
+            var s = FirebaseTestSender.GetNumOfSuccessful();
+            var f = FirebaseTestSender.GetNumOfFailedful();
+            Console.WriteLine("Exit FCM 1 Send Status Succeeded = " + s + " Failed = " + f);
             stopWatchAll.Stop();
+
+            Thread.Sleep(2000);
+             s = FirebaseTestSender.GetNumOfSuccessful();
+             f = FirebaseTestSender.GetNumOfFailedful();
+            Console.WriteLine(" FCM 2 Send Status Succeeded = " + s + " Failed = " + f);
             TimeSpan ts = stopWatchAll.Elapsed;
 
             // Format and display the TimeSpan value.
-            String result = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                  ts.Hours, ts.Minutes, ts.Seconds,
-                  ts.Milliseconds / 10);
+            String result = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
 
             Console.WriteLine(result);
 
-            Console.WriteLine(" *************** Miliseconds =  **************  " + stopWatch.ElapsedMilliseconds);
-            Console.WriteLine("***************  Tics =  *************** " + stopWatch.ElapsedTicks);
+            Console.WriteLine(" *************** Miliseconds =  **************  " + stopWatchAll.ElapsedMilliseconds);
+            Console.WriteLine("***************  Tics =  *************** " + stopWatchAll.ElapsedTicks);
 
 
 

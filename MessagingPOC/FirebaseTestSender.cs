@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+
 using FirebaseNet.Messaging;
 using Newtonsoft.Json;
 
@@ -10,8 +14,24 @@ namespace MessagingPOC {
 public class FirebaseTestSender
 {
 
+    public static ConcurrentDictionary<int,bool>  MessagesStatus { get; set; }
+    protected static long _numOfSuccessfuleMsg = 0;
+    protected static long _numOfFailedeMsg = 0;
     protected static int _msgCounter = 0;
-    protected static int _sendingInstances = 0;
+    protected static volatile int _sendingInstances = 0;
+
+     protected static Object _lock = new Object();
+    
+
+    public static void Init()
+    {
+        lock(_lock)
+        {
+            if(MessagesStatus == null)
+                 MessagesStatus = new ConcurrentDictionary<int,bool>();
+        }
+        
+    }
     public async Task<bool> SenderToFirebaseAsync2(String dataJson)
     {
         bool bStatus = true;
@@ -83,15 +103,15 @@ public class FirebaseTestSender
     {
 
         bool bStatus = true;
-
+       
         Interlocked.Increment(ref _sendingInstances);
-        while(_sendingInstances > 100)
+        while(_sendingInstances > 90)
         {
             Thread.Sleep(50);
         }
         var ind = dataJson.IndexOf("Index");
-         var indexVal = dataJson.Substring(ind, 10);
-        Console.WriteLine("Processing Messsage " + indexVal);
+         var indexVal = dataJson.Substring(ind, 12);
+        //Console.WriteLine("Processing Messsage " + indexVal + " CurrentTghreadId = " + Thread.CurrentThread.ManagedThreadId);
      
 
     var registrationId = "dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y";
@@ -112,23 +132,120 @@ public class FirebaseTestSender
             // }   
         };
 
-        try{
-      
-              
-            DownstreamMessageResponse result = (DownstreamMessageResponse) await client.SendMessageAsync(message);
-            Console.WriteLine("After FCMClient: SendMessageAsync");
-            Console.WriteLine($"********* Success: {result.Success} " + "\n Message " + indexVal + " SendingInstances = " + _sendingInstances);
+
+             Stopwatch stopWatchFcm = new Stopwatch();
             
+        try{
+            stopWatchFcm.Start();
+            var size = dataJson.Length;  
+           //Console.WriteLine($"Message Size: '{size}'");
+            DownstreamMessageResponse result = (DownstreamMessageResponse) await client.SendMessageAsync(message);
+         //   Console.WriteLine("After FCMClient: SendMessageAsync");
+            
+            if(1 == result.Success)
+            {
+                //Console.WriteLine($"********* Success: {result.Success} " + "\n Message " + indexVal + " SendingInstances = " + _sendingInstances);
+                Interlocked.Increment(ref _numOfSuccessfuleMsg);
+            }else{
+                Interlocked.Increment(ref _numOfFailedeMsg);
+                Console.WriteLine($"********* Failed: {result.Failure} " + "\n Message " + indexVal + " SendingInstances = " + _sendingInstances);
+                
+            }
+
+            stopWatchFcm.Stop();
         }catch(Exception error)
         {
 
-            Console.WriteLine($"Text: '{error.Message}'");
+            Interlocked.Increment(ref _numOfFailedeMsg);
+            Console.WriteLine($"********* Failed:" + "\n Message " + indexVal + " SendingInstances = " + _sendingInstances);
+     
+            Console.WriteLine($"Text: '{error.Message}'" );
 
-            Interlocked.Decrement(ref _sendingInstances);
+           bStatus = false;
         }
         Interlocked.Decrement(ref _sendingInstances);
 
         return bStatus;
     }
+
+
+
+
+     public async Task<bool> SenderDataPayloadToFirebaseAsync(Dictionary<String, String> data, String [] recievedRegistration_ids   )
+    {
+
+        bool bStatus = true;
+       
+        Interlocked.Increment(ref _sendingInstances);
+        while(_sendingInstances > 50)
+        {
+            Thread.Sleep(5);
+        }
+        var ind = data["msg_index"];
+         
+        //Console.WriteLine("Processing Messsage " + indexVal + " CurrentTghreadId = " + Thread.CurrentThread.ManagedThreadId);
+      
+
+    var registrationId = "dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y";
+        var serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
+        FCMClient client = new FCMClient(serverKey);
+       client.TestMode  = true;
+       int msg_id = Convert.ToInt32(data["msg_index"]);
+       FirebaseTestSender.MessagesStatus.AddOrUpdate(msg_id, false, (k,v) => false);
+        var message = new Message
+        {
+            RegistrationIds  = recievedRegistration_ids,
+            Data =   data            
+        };
+
+        
+       
+            
+        try{
+          
+            var size = JsonConvert.SerializeObject(message).Length; 
+            //    Console.WriteLine($"********* Success: 100 " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+            //     Thread.Sleep(100);
+
+           //Console.WriteLine($"Message Size: '{size}'");
+            DownstreamMessageResponse result = (DownstreamMessageResponse) await client.SendMessageAsync(message);
+    
+            Interlocked.Decrement(ref _sendingInstances);
+            if(result.Success > 1)
+            {
+                Console.WriteLine($"********* Success: {result.Success} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+              
+            }else{
+                
+                Console.WriteLine($"********* Failed: {result.Failure} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+                
+            }
+
+            Interlocked.Add(ref _numOfSuccessfuleMsg, result.Success);
+            Interlocked.Add(ref _numOfFailedeMsg, result.Failure);
+
+
+            // Interlocked.Add(ref _numOfSuccessfuleMsg, 100);
+            // Interlocked.Add(ref _numOfFailedeMsg, 0);
+        }catch(Exception error)
+        {
+
+           Interlocked.Add(ref _numOfFailedeMsg, recievedRegistration_ids.Length);
+            Console.WriteLine($"********* Failed:" + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+     
+            Console.WriteLine($"Text: '{error.Message}'" );
+
+           bStatus = false;
+        }
+       
+       MessagesStatus.AddOrUpdate(msg_id, true, (k,v) => true);
+    
+
+        return bStatus;
+    }
+
+
+    public static long GetNumOfSuccessful(){return _numOfSuccessfuleMsg;}
+    public static long GetNumOfFailedful(){return _numOfFailedeMsg;}
 }
 }

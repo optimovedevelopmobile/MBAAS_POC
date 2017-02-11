@@ -40,6 +40,7 @@ public class PublishPushMesssages
     static String RegistrationId = "dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y";
     static String serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
 
+    protected static Object _processLock = new Object();
     #endregion
     #endregion
 
@@ -114,8 +115,18 @@ public class PublishPushMesssages
             
             int tenantId = 1;
             customerId++;
-            int index = Interlocked.Increment(ref _publishedMsgCount);
-            var currPushMsg = new PushMessageData(tenantId, numOfUsersIdPerMessage, "Title Text The quick brown fox jumps over the lazy dog ", "Content text The quick brown fox jumps over the lazy dog", PushMessageDataPayloadTypeEnum.BigText, index);
+            PushMessageData currPushMsg = null;
+            lock(_processLock){
+                _publishedMsgCount = Interlocked.Increment(ref _publishedMsgCount);
+
+                
+               currPushMsg = new PushMessageData(tenantId, numOfUsersIdPerMessage, 
+                                        "Title Text The quick brown fox jumps over the lazy dog ", 
+                                            "Content text The quick brown fox jumps over the lazy dog",
+                                                    PushMessageDataPayloadTypeEnum.BigText, _publishedMsgCount);
+
+            }
+          
             String json = currPushMsg.GetFCMMessageJson();
             // Publish a message to the topic.
             PubsubMessage message = new PubsubMessage

@@ -19,7 +19,7 @@ namespace MessagingPOC
         {
             TenantId = tenantId;
 
-
+           
             var data = new FCMDataPayloadSection(title, content, type, msgIndex);
             data.SetLongText("This is my long text");
 
