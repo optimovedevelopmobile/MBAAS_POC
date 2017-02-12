@@ -217,7 +217,7 @@ public class FirebaseTestSender
               
             }else{
                 
-             //   Console.WriteLine($"********* Failed: {_numOfFailedeMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+             //    Console.WriteLine($"********* Failed: {_numOfFailedeMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
                 
             }
 
