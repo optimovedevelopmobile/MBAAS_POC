@@ -213,11 +213,11 @@ public class FirebaseTestSender
             Interlocked.Decrement(ref _sendingInstances);
             if(result.Success >= 1)
             {
-                Console.WriteLine($"********* Success: {_numOfSuccessfuleMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+             //   Console.WriteLine($"********* Success: {_numOfSuccessfuleMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
               
             }else{
                 
-                Console.WriteLine($"********* Failed: {_numOfFailedeMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+             //   Console.WriteLine($"********* Failed: {_numOfFailedeMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
                 
             }
 
