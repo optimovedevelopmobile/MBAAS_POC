@@ -79,7 +79,7 @@ namespace MessagingPOC
         public void SetCustomerIdsAsRegistrationIds(long[] customerIds)
         {
             customer_ids += customerIds[0];
-            if (customerIds.Length > 1)
+            if (customerIds.Length >= 1)
             {
                 for (int indx = 1; indx < customerIds.Length; indx++)
                 {

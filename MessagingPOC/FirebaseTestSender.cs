@@ -183,32 +183,31 @@ public class FirebaseTestSender
         }
         var ind = data["msg_index"];
          
-        //Console.WriteLine("Processing Messsage " + indexVal + " CurrentTghreadId = " + Thread.CurrentThread.ManagedThreadId);
-      
 
-    var registrationId = "dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y";
+        var registrationId = "dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y";
         var serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
         FCMClient client = new FCMClient(serverKey);
-       client.TestMode  = true;
-       int msg_id = Convert.ToInt32(data["msg_index"]);
-       FirebaseTestSender.MessagesStatus.AddOrUpdate(msg_id, false, (k,v) => false);
+        client.TestMode  = true;
+        int msg_id = Convert.ToInt32(data["msg_index"]);
+        FirebaseTestSender.MessagesStatus.AddOrUpdate(msg_id, false, (k,v) => false);
         var message = new Message
         {
             RegistrationIds  = recievedRegistration_ids,
             Data =   data            
         };
-
-        
        
-            
         try{
           
-            var size = JsonConvert.SerializeObject(message).Length; 
-            //    Console.WriteLine($"********* Success: 100 " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
-            //     Thread.Sleep(100);
+            var size = JsonConvert.SerializeObject(message).Length;
+                //    Console.WriteLine($"********* Success: 100 " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+                //     Thread.Sleep(100);
 
-           //Console.WriteLine($"Message Size: '{size}'");
-            DownstreamMessageResponse result = (DownstreamMessageResponse) await client.SendMessageAsync(message);
+                //Console.WriteLine($"Message Size: '{size}'");
+             Task<IFCMResponse>  taskResponse = (Task<IFCMResponse>) client.SendMessageAsync(message);
+            Thread.Sleep(10);
+            DownstreamMessageResponse result =  (DownstreamMessageResponse) await taskResponse;
+
+          
     
             Interlocked.Decrement(ref _sendingInstances);
             if(result.Success > 1)
@@ -240,7 +239,6 @@ public class FirebaseTestSender
        
        MessagesStatus.AddOrUpdate(msg_id, true, (k,v) => true);
     
-
         return bStatus;
     }
 

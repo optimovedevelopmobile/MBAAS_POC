@@ -18,9 +18,9 @@ namespace ConsoleApplication
 
             Stopwatch stopWatchAll = new Stopwatch();
             Stopwatch stopWatch = new Stopwatch();
-            int numOfPublishThreads = 1;
-            int numOfMessagesPerThread = 10;
-            int numOfUsersIdPerMessage = 100;
+            int numOfPublishThreads = 10;
+            int numOfMessagesPerThread = 20;
+            int numOfUsersIdPerMessage = 10;
             String serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
 
             var pubFCM = new PublishPushMesssages();
@@ -42,7 +42,7 @@ namespace ConsoleApplication
              Stopwatch stopWatchFcm = new Stopwatch();
             stopWatchFcm.Start();
             var pullWorkerToFCM = new PendingMessagesToFCMPullWorker();
-            pullWorkerToFCM.InitializePullWorker(1, 10);
+            pullWorkerToFCM.InitializePullWorker(6, 10);
             pullWorkerToFCM.ActivatePullingTasks();
             stopWatchFcm.Stop();
             Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatchFcm.ElapsedMilliseconds);

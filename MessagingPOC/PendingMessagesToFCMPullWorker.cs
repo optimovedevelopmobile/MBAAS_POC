@@ -162,20 +162,8 @@ namespace MessagingPOC
 
             try{
 
-                long length = 0;
-                
-                  lock(_redisOperationLock){
-                     length = _redisDB.ListLength(PendingQueue);
-                    }
-                if (length == 0)
-                {
-                    Thread.Sleep(10);
-                }
-                else
-                {
-                    var b = await PullMessagedFromPubSubAsync(ct);
-                    Console.WriteLine("Exiting PullMessagesFromRedisTaskAsync ");
-                }
+              var b = await PullMessagedFromPubSubAsync(ct);
+              Console.WriteLine("Exiting PullMessagesFromRedisTaskAsync ");
 
             }catch(Exception e) {
                     Console.WriteLine("PullMessagesFromRedisTaskAsync Faile" + e.Message);
@@ -219,7 +207,7 @@ namespace MessagingPOC
                         Dictionary<String, String>  convertedMessage = null;
                         String[] recievedRegistration_ids;
                         bool converted = ConvertMessageWithTokens(message, out convertedMessage, out recievedRegistration_ids);
-                        await firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids);
+                        firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids);
 
                     }
                                         
