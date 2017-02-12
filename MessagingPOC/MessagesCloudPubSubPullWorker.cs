@@ -102,6 +102,7 @@ namespace MessagingPOC
         {
 
             bool bStatus = false;
+            int total = 0;
             while(true)
             {
 
@@ -112,7 +113,8 @@ namespace MessagingPOC
                     if(response != null)
                     {
                         var currEnum = response.ReceivedMessages.GetEnumerator();
-                        var count = response.ReceivedMessages.Count;          
+                        var count = response.ReceivedMessages.Count;    
+                        total += count;      
                         if(count > 0){
                          PushMessagesInToRedisQueue(response);
 
@@ -124,20 +126,17 @@ namespace MessagingPOC
                         TimeSpan ts = stopWatch.Elapsed;
                         
             // Format and display the TimeSpan value.
-                        String result = String.Format("Pull and Ack " + count + " Messages Time  {0:00}:{1:00}:{2:00}.{3:00}", 
-                                ts.Hours, ts.Minutes, ts.Seconds, 
-                                ts.Milliseconds/10);
-
-                        Console.WriteLine(result);
-
+                     
+                    
                         Console.WriteLine("Pull and Ack  Messages TimeMiliseconds = " + stopWatch.ElapsedMilliseconds);
-                        Console.WriteLine("Pull and Ack Messages Time Tics = " + stopWatch.ElapsedTicks);
+                    
 
                     }else
                         break;
                   
             }
-           
+           Console.WriteLine("Pull and Ack Total = " + total);
+                    
             return bStatus;
         }
 
