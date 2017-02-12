@@ -38,7 +38,7 @@ namespace ConsoleApplication
             stopWatchRedis.Start();
             var pullWorker = new MessagesCloudPubSubPullWorker();
             pullWorker.InitializePullWorker();
-            pullWorker.StartPullingFromCloudPubSub(100);
+            pullWorker.StartPullingFromCloudPubSub(1000);
             stopWatchRedis.Stop();
             Console.WriteLine("Read and Insert into Redis Miliseconds = " + stopWatchRedis.ElapsedMilliseconds);
             Console.WriteLine(" AFter Read PubSub Into Redis");

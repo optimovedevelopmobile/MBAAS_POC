@@ -265,7 +265,8 @@ namespace MessagingPOC
                 var msgCollection3 = _redisDB.ListRange(PendingQueue, 2000, 2999);                                
                 var msgCollection4 = _redisDB.ListRange(PendingQueue, 3000, 3999);                                
                 var msgCollection5 = _redisDB.ListRange(PendingQueue, 4000, 4999);                                
-                _redisDB.ListTrim(PendingQueue, 0, 500, CommandFlags.HighPriority);    
+                _redisDB.ListTrimAsync(PendingQueue, 0, 0, CommandFlags.HighPriority);    
+                _redisDB.ListRightPopAsync(PendingQueue);    
                     
                 Parallel.Invoke(() => DoSomeWork(msgCollection1, client), () => DoSomeWork(msgCollection2, client));
                  //,() => DoSomeWork(msgCollection2));
