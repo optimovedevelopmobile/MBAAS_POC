@@ -155,9 +155,10 @@ namespace MessagingPOC
                                       
                 _redisDB.ListLeftPush(PendingQueue, jsonMsg);
 
-                var size = _redisDB.ListLength("Pending");
-                Console.WriteLine("redis length size = " + size );
+               
             }
+             var size = _redisDB.ListLength("Pending");
+            Console.WriteLine("redis length size = " + size );
         }
 
         /// <summary>
