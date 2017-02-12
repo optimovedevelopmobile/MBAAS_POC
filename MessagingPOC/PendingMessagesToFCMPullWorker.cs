@@ -268,8 +268,7 @@ namespace MessagingPOC
                 _redisDB.ListTrimAsync(PendingQueue, 0, 0, CommandFlags.HighPriority);    
                 _redisDB.ListRightPopAsync(PendingQueue);    
                     
-                Parallel.Invoke(() => DoSomeWork(msgCollection1, client), () => DoSomeWork(msgCollection2, client)
-                 ,() => DoSomeWork(msgCollection2, client)
+                Parallel.Invoke(() => DoSomeWork(msgCollection1, client), () => DoSomeWork(msgCollection2, client)              
                  ,() => DoSomeWork(msgCollection3, client),() => DoSomeWork(msgCollection4, client),() => DoSomeWork(msgCollection5, client));
                   
                                         
