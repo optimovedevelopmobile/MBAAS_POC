@@ -208,20 +208,20 @@ public class FirebaseTestSender
             DownstreamMessageResponse result =  (DownstreamMessageResponse) await taskResponse;
 
           
-    
+            Interlocked.Add(ref _numOfSuccessfuleMsg, result.Success);
+            Interlocked.Add(ref _numOfFailedeMsg, result.Failure);
             Interlocked.Decrement(ref _sendingInstances);
             if(result.Success >= 1)
             {
-                Console.WriteLine($"********* Success: {result.Success} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+                Console.WriteLine($"********* Success: {_numOfSuccessfuleMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
               
             }else{
                 
-                Console.WriteLine($"********* Failed: {result.Failure} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
+                Console.WriteLine($"********* Failed: {_numOfFailedeMsg} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
                 
             }
 
-            Interlocked.Add(ref _numOfSuccessfuleMsg, result.Success);
-            Interlocked.Add(ref _numOfFailedeMsg, result.Failure);
+           
 
 
             // Interlocked.Add(ref _numOfSuccessfuleMsg, 100);
