@@ -163,8 +163,8 @@ namespace MessagingPOC
 
             try{
 
-              //var b = await  PullMessagedFromPubSubAsync(ct);
-               var b = await  PullMultiMessagedAsync(ct);
+              var b = await  PullMessagedFromPubSubAsync(ct);
+              // var b = await  PullMultiMessagedAsync(ct);
               Console.WriteLine("Exiting PullMessagesFromRedisTaskAsync ");
 
             }catch(Exception e) {
