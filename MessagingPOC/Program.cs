@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Net;
 using StackExchange.Redis;
 // Imports the Google Cloud client library
 using Google.Pubsub.V1;
 using System.Diagnostics;
 using System.Threading;
 using MessagingPOC;
+using System.Net.Http;
 
 namespace ConsoleApplication
 {
@@ -19,8 +21,10 @@ namespace ConsoleApplication
             Stopwatch stopWatchAll = new Stopwatch();
             Stopwatch stopWatch = new Stopwatch();
             int numOfPublishThreads = 10;
-            int numOfMessagesPerThread = 20;
-            int numOfUsersIdPerMessage = 10;
+            int numOfMessagesPerThread = 50;
+            int numOfUsersIdPerMessage = 1;
+            
+            
             String serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
 
             var pubFCM = new PublishPushMesssages();
@@ -42,7 +46,7 @@ namespace ConsoleApplication
              Stopwatch stopWatchFcm = new Stopwatch();
             stopWatchFcm.Start();
             var pullWorkerToFCM = new PendingMessagesToFCMPullWorker();
-            pullWorkerToFCM.InitializePullWorker(6, 10);
+            pullWorkerToFCM.InitializePullWorker(1, 10);
             pullWorkerToFCM.ActivatePullingTasks();
             stopWatchFcm.Stop();
             Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatchFcm.ElapsedMilliseconds);

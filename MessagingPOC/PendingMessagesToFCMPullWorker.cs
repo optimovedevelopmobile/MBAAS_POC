@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 // Imports the Google Cloud client library
 using System.Threading.Tasks;
+using FirebaseNet.Messaging;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -162,7 +163,7 @@ namespace MessagingPOC
 
             try{
 
-              var b = await PullMessagedFromPubSubAsync(ct);
+              var b = await  PullMessagedFromPubSubAsync(ct);
               Console.WriteLine("Exiting PullMessagesFromRedisTaskAsync ");
 
             }catch(Exception e) {
@@ -193,11 +194,13 @@ namespace MessagingPOC
                     }
                 long numOfMsg = length - 1;
                 RedisValue message = new RedisValue();
+                FCMClient client = new FCMClient(serverKey);
                 while (length > 0)
                 {                                        
                     
                     lock(_redisOperationLock){
                         length = _redisDB.ListLength(PendingQueue);
+                        
                         if(length >= 1)
                         {
                             message =  _redisDB.ListRightPop(PendingQueue);                            
@@ -207,7 +210,10 @@ namespace MessagingPOC
                         Dictionary<String, String>  convertedMessage = null;
                         String[] recievedRegistration_ids;
                         bool converted = ConvertMessageWithTokens(message, out convertedMessage, out recievedRegistration_ids);
-                        firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids);
+                        Task taskA = new Task( () => firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids, client));
+                        // Start the task.
+                        taskA.Start();
+                        //firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids);
 
                     }
                                         
@@ -227,6 +233,75 @@ namespace MessagingPOC
                 
                                                            
                 return  bStatus;
+        }
+
+
+
+        /// <summary>
+        /// Pulls the messaged from pub sub.
+        /// </summary>
+        /// <param name="ct">The ct.</param>
+        protected static async Task<bool> PullMultiMessagedAsync(CancellationToken ct)
+        {
+            bool bStatus = true;
+         
+            FirebaseTestSender.Init();
+           FCMClient client = new FCMClient(serverKey);
+            Stopwatch stopWatch = new Stopwatch();
+          
+                long length = 0;
+               
+               lock(_redisOperationLock){
+                     length = _redisDB.ListLength(PendingQueue);
+                    }
+                long numOfMsg = length - 1;
+                RedisValue message = new RedisValue();
+                //RedisValue[] msgCollection = new RedisValue[1];
+                long start = 0, end = 0;
+                long step = length/5;
+                        
+                   
+                var msgCollection1 = _redisDB.ListRange(PendingQueue, 0, 99);                                
+                var msgCollection2 = _redisDB.ListRange(PendingQueue, 100, 199);                                
+                var msgCollection3 = _redisDB.ListRange(PendingQueue, 200, 299);                                
+                var msgCollection4 = _redisDB.ListRange(PendingQueue, 300, 399);                                
+                var msgCollection5 = _redisDB.ListRange(PendingQueue, 400, 499);                                
+                _redisDB.ListTrim(PendingQueue, 0, 500, CommandFlags.HighPriority);    
+                    
+                Parallel.Invoke(() => DoSomeWork(msgCollection1, client), () => DoSomeWork(msgCollection2, client));
+                 //,() => DoSomeWork(msgCollection2));
+                 //,() => DoSomeWork(msgCollection3),() => DoSomeWork(msgCollection4),() => DoSomeWork(msgCollection5));
+                  
+                                        
+                   lock(_redisOperationLock){
+                      
+                       length = _redisDB.ListLength(PendingQueue); 
+                    }                                                                                          
+                
+                
+
+                while(true)
+                {
+                    bool isFinished = CheckMessagesStatus();  
+                    if(isFinished)
+                        break;
+                        Thread.Sleep(50);
+                }
+                
+                                                           
+                return  bStatus;
+        }
+
+        private static void DoSomeWork(RedisValue[] msgCollection, FCMClient client)
+        {
+            var firebasenet = new FirebaseTestSender();
+            foreach(var m in msgCollection){                        
+                        Dictionary<String, String>  convertedMessage = null;
+                        String[] recievedRegistration_ids;
+                        bool converted = ConvertMessageWithTokens(m, out convertedMessage, out recievedRegistration_ids);
+                        firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids, client);
+
+                    };
         }
 
         private static bool CheckMessagesStatus()

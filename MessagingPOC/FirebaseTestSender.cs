@@ -171,22 +171,22 @@ public class FirebaseTestSender
 
 
 
-     public async Task<bool> SenderDataPayloadToFirebaseAsync(Dictionary<String, String> data, String [] recievedRegistration_ids   )
+     public async Task<bool> SenderDataPayloadToFirebaseAsync(Dictionary<String, String> data, String [] recievedRegistration_ids,  FCMClient client   )
     {
 
         bool bStatus = true;
        
         Interlocked.Increment(ref _sendingInstances);
-        while(_sendingInstances > 50)
+        while(_sendingInstances > 80)
         {
-            Thread.Sleep(5);
+            Thread.Sleep(2);
         }
         var ind = data["msg_index"];
          
 
         var registrationId = "dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y";
         var serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
-        FCMClient client = new FCMClient(serverKey);
+        
         client.TestMode  = true;
         int msg_id = Convert.ToInt32(data["msg_index"]);
         FirebaseTestSender.MessagesStatus.AddOrUpdate(msg_id, false, (k,v) => false);
@@ -203,14 +203,14 @@ public class FirebaseTestSender
                 //     Thread.Sleep(100);
 
                 //Console.WriteLine($"Message Size: '{size}'");
-             Task<IFCMResponse>  taskResponse = (Task<IFCMResponse>) client.SendMessageAsync(message);
-            Thread.Sleep(10);
+            Task<IFCMResponse>  taskResponse = (Task<IFCMResponse>) client.SendMessageAsync(message);
+            //Thread.Sleep(1);
             DownstreamMessageResponse result =  (DownstreamMessageResponse) await taskResponse;
 
           
     
             Interlocked.Decrement(ref _sendingInstances);
-            if(result.Success > 1)
+            if(result.Success >= 1)
             {
                 Console.WriteLine($"********* Success: {result.Success} " + "\n Message " + ind + " SendingInstances = " + _sendingInstances);
               
