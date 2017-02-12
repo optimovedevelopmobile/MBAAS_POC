@@ -128,7 +128,7 @@ namespace MessagingPOC
             // Format and display the TimeSpan value.
                      
                     
-                        Console.WriteLine("Pull and Ack  Messages TimeMiliseconds = " + stopWatch.ElapsedMilliseconds);
+                        Console.WriteLine("Pull and Ack count=" + count + " Messages TimeMiliseconds = " + stopWatch.ElapsedMilliseconds);
                     
 
                     }else
@@ -155,8 +155,8 @@ namespace MessagingPOC
                                       
                 _redisDB.ListLeftPush(PendingQueue, jsonMsg);
 
-                // var currValue = _redisDB.ListRightPop("Pending");
-
+                var size = _redisDB.ListLength("Pending");
+                Console.WriteLine("redis length size = " + size );
             }
         }
 
