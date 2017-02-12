@@ -124,7 +124,7 @@ namespace MessagingPOC
                         TimeSpan ts = stopWatch.Elapsed;
                         
             // Format and display the TimeSpan value.
-                        String result = String.Format("Pull and Ack " + maxMsgPull + " Messages Time  {0:00}:{1:00}:{2:00}.{3:00}", 
+                        String result = String.Format("Pull and Ack " + count + " Messages Time  {0:00}:{1:00}:{2:00}.{3:00}", 
                                 ts.Hours, ts.Minutes, ts.Seconds, 
                                 ts.Milliseconds/10);
 
