@@ -163,8 +163,8 @@ namespace MessagingPOC
 
             try{
 
-              var b = await  PullMessagedFromPubSubAsync(ct);
-              // var b = await  PullMultiMessagedAsync(ct);
+              //var b = await  PullMessagedFromPubSubAsync(ct);
+               var b = await  PullMultiMessagedAsync(ct);
               Console.WriteLine("Exiting PullMessagesFromRedisTaskAsync ");
 
             }catch(Exception e) {
@@ -264,13 +264,13 @@ namespace MessagingPOC
                 var msgCollection2 = _redisDB.ListRange(PendingQueue, 1000, 1999);                                
                 var msgCollection3 = _redisDB.ListRange(PendingQueue, 2000, 2999);                                
                 var msgCollection4 = _redisDB.ListRange(PendingQueue, 3000, 3999);                                
-                var msgCollection5 = _redisDB.ListRange(PendingQueue, 4000, 4999);                                
+                var msgCollection5 = _redisDB.ListRange(PendingQueue, 4000, 5000);                                
                 _redisDB.ListTrimAsync(PendingQueue, 0, 0, CommandFlags.HighPriority);    
                 _redisDB.ListRightPopAsync(PendingQueue);    
                     
-                Parallel.Invoke(() => DoSomeWork(msgCollection1, client), () => DoSomeWork(msgCollection2, client));
-                 //,() => DoSomeWork(msgCollection2));
-                 //,() => DoSomeWork(msgCollection3),() => DoSomeWork(msgCollection4),() => DoSomeWork(msgCollection5));
+                Parallel.Invoke(() => DoSomeWork(msgCollection1, client), () => DoSomeWork(msgCollection2, client)
+                 ,() => DoSomeWork(msgCollection2, client)
+                 ,() => DoSomeWork(msgCollection3, client),() => DoSomeWork(msgCollection4, client),() => DoSomeWork(msgCollection5, client));
                   
                                         
                    lock(_redisOperationLock){
