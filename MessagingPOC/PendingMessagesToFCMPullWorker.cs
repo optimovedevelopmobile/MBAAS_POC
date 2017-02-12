@@ -210,10 +210,8 @@ namespace MessagingPOC
                         Dictionary<String, String>  convertedMessage = null;
                         String[] recievedRegistration_ids;
                         bool converted = ConvertMessageWithTokens(message, out convertedMessage, out recievedRegistration_ids);
-                        Task taskA = new Task( () => firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids, client));
-                        // Start the task.
-                        taskA.Start();
-                        //firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids);
+                      
+                        firebasenet.SenderDataPayloadToFirebaseAsync(convertedMessage, recievedRegistration_ids, client);
 
                     }
                                         

@@ -21,8 +21,8 @@ namespace ConsoleApplication
             Stopwatch stopWatchAll = new Stopwatch();
             Stopwatch stopWatch = new Stopwatch();
             int numOfPublishThreads = 10;
-            int numOfMessagesPerThread = 50;
-            int numOfUsersIdPerMessage = 1;
+            int numOfMessagesPerThread = 500;
+            int numOfUsersIdPerMessage = 100;
             
             
             String serverKey = "AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q";
