@@ -46,7 +46,7 @@ namespace ConsoleApplication
              Stopwatch stopWatchFcm = new Stopwatch();
             stopWatchFcm.Start();
             var pullWorkerToFCM = new PendingMessagesToFCMPullWorker();
-            pullWorkerToFCM.InitializePullWorker(1, 10);
+            pullWorkerToFCM.InitializePullWorker(2, 10);
             pullWorkerToFCM.ActivatePullingTasks();
             stopWatchFcm.Stop();
             Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatchFcm.ElapsedMilliseconds);
