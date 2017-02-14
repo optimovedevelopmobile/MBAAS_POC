@@ -73,7 +73,9 @@ var fcm = new FCM(serverKey);
       }
   });
  var replied = 0;
- var maxCalls = 5000;
+ var succeeded = 0;
+ var failed = 0;
+ var maxCalls = 10000;
 
 
 // var vigourPerformance = require("vigour-performance").
@@ -112,8 +114,10 @@ var startTime = perf();
     console.log("count: ", count);
       fcm.send(message, function(err, response){
             if (err) {
+              failed++;
                 console.log("Something has gone wrong!");
             } else {
+              succeeded++;
                 console.log("Successfully sent with response: ", response);
             }
             replied++;
@@ -123,6 +127,8 @@ var startTime = perf();
               var elapsed = perf(startTime);
                console.log("Finished with elapsed = ", elapsed);
                console.log("Finished with replied = ", replied);
+               console.log("Finished with succeeded = ", succeeded);
+               console.log("Finished with Failed = ", failed);
             }
         });
   }
