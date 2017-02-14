@@ -79,11 +79,12 @@ var w = new Worker(queues, options, redisOptions);
 var posted = 0;
 var succeded = 0;
 var failed = 0;
-var tartTime = perfTime();;
+
  w.on('error', function(err){
     console.log(err);
 });
 var perfTime = require("vigour-performance").time;
+var startTime = perfTime();
 w.on('message', function(queue, data) {
     console.log(queue); // Queue name the message dropped in. 
     posted++;
@@ -107,6 +108,7 @@ w.on('message', function(queue, data) {
 
       if(failed + succeeded >= 10)
       {
+        w.stop();
         var elapsed = perfTime(startTime);
         console.log("Total Time: ", startTime);
       }
