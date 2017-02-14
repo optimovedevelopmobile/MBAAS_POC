@@ -44,17 +44,6 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-var Redis = require('ioredis');
-var redis = new Redis();
- 
-redis.set('foo', 'yossibar');
-redis.get('foo', function (err, result) {
-  console.log(result);
-});
-
-
-
-
 var FCM = require('fcm-node');
  var RegistrationId = 'dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y';
  var serverKey = 'AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q';
@@ -129,6 +118,9 @@ run(
     // iterations : number of times the subject function was executed 
     // ) 
   },
-  100 // number of times to execute the subject function 
+  5000 // number of times to execute the subject function 
 )
+
+
+
 module.exports = app;
