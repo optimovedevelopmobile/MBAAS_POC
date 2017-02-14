@@ -79,13 +79,19 @@ var w = new Worker(queues, options, redisOptions);
 var posted = 0;
 var succeded = 0;
 var failed = 0;
-
+var startTime;
  w.on('error', function(err){
     console.log(err);
 });
+var perfTime = require("vigour-performance").time;
 w.on('message', function(queue, data) {
     console.log(queue); // Queue name the message dropped in. 
     posted++;
+    if(posted == 1)
+    {
+      
+      startTime = perfTime();
+    }
     console.log('posted= ', posted); // Redis data string or json if possible to parse. 
     fcm.send(message, function(err, response){
       
@@ -97,6 +103,12 @@ w.on('message', function(queue, data) {
           succeded++;
           console.log("Successfully sent with response count: ", succeded);
           console.log("Successfully sent with response: ", response);
+      }
+
+      if(failed + succeeded >= 500)
+      {
+        var elapsed = perfTime(startTime);
+        console.log("Total Time: ", startTime);
       }
   });
 });
