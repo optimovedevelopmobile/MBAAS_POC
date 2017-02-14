@@ -21,7 +21,7 @@ namespace ConsoleApplication
             Stopwatch stopWatchAll = new Stopwatch();
             Stopwatch stopWatch = new Stopwatch();
             int numOfPublishThreads = 10;
-            int numOfMessagesPerThread = 500;
+            int numOfMessagesPerThread = 50;
             int numOfUsersIdPerMessage = 100;
             
             
@@ -43,23 +43,23 @@ namespace ConsoleApplication
             Console.WriteLine("Read and Insert into Redis Miliseconds = " + stopWatchRedis.ElapsedMilliseconds);
             Console.WriteLine(" AFter Read PubSub Into Redis");
 
-             Stopwatch stopWatchFcm = new Stopwatch();
-            stopWatchFcm.Start();
-            var pullWorkerToFCM = new PendingMessagesToFCMPullWorker();
-            pullWorkerToFCM.InitializePullWorker(1, 10);
-            pullWorkerToFCM.ActivatePullingTasks();
-            stopWatchFcm.Stop();
-            Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatchFcm.ElapsedMilliseconds);
+            //  Stopwatch stopWatchFcm = new Stopwatch();
+            // stopWatchFcm.Start();
+            // var pullWorkerToFCM = new PendingMessagesToFCMPullWorker();
+            // pullWorkerToFCM.InitializePullWorker(1, 10);
+            // pullWorkerToFCM.ActivatePullingTasks();
+            // stopWatchFcm.Stop();
+            // Console.WriteLine("PendingMessagesToFCMPullWorker Miliseconds = " + stopWatchFcm.ElapsedMilliseconds);
 
-            var s = FirebaseTestSender.GetNumOfSuccessful();
-            var f = FirebaseTestSender.GetNumOfFailedful();
-            Console.WriteLine("Exit FCM 1 Send Status Succeeded = " + s + " Failed = " + f);
-            stopWatchAll.Stop();
+            // var s = FirebaseTestSender.GetNumOfSuccessful();
+            // var f = FirebaseTestSender.GetNumOfFailedful();
+            // Console.WriteLine("Exit FCM 1 Send Status Succeeded = " + s + " Failed = " + f);
+            // stopWatchAll.Stop();
 
-            Thread.Sleep(2000);
-             s = FirebaseTestSender.GetNumOfSuccessful();
-             f = FirebaseTestSender.GetNumOfFailedful();
-            Console.WriteLine(" FCM 2 Send Status Succeeded = " + s + " Failed = " + f);
+            // Thread.Sleep(2000);
+            //  s = FirebaseTestSender.GetNumOfSuccessful();
+            //  f = FirebaseTestSender.GetNumOfFailedful();
+            // Console.WriteLine(" FCM 2 Send Status Succeeded = " + s + " Failed = " + f);
             TimeSpan ts = stopWatchAll.Elapsed;
 
             // Format and display the TimeSpan value.
