@@ -73,7 +73,7 @@ var fcm = new FCM(serverKey);
       }
   });
  var replied = 0;
- var maxCalls = 1000;
+ var maxCalls = 5000;
 
 
 // var vigourPerformance = require("vigour-performance").
