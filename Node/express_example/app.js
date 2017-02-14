@@ -79,7 +79,7 @@ var w = new Worker(queues, options, redisOptions);
 var posted = 0;
 var succeded = 0;
 var failed = 0;
-var startTime;
+var tartTime = perfTime();;
  w.on('error', function(err){
     console.log(err);
 });
@@ -105,7 +105,7 @@ w.on('message', function(queue, data) {
           console.log("Successfully sent with response: ", response);
       }
 
-      if(failed + succeeded >= 500)
+      if(failed + succeeded >= 10)
       {
         var elapsed = perfTime(startTime);
         console.log("Total Time: ", startTime);

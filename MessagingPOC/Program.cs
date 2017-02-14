@@ -20,8 +20,8 @@ namespace ConsoleApplication
 
             Stopwatch stopWatchAll = new Stopwatch();
             Stopwatch stopWatch = new Stopwatch();
-            int numOfPublishThreads = 10;
-            int numOfMessagesPerThread = 50;
+            int numOfPublishThreads = 1;
+            int numOfMessagesPerThread = 10;
             int numOfUsersIdPerMessage = 100;
             
             
