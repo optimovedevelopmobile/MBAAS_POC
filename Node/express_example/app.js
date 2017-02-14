@@ -44,10 +44,11 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-var sleep = require('sleep');
+
 var FCM = require('fcm-node');
  var RegistrationId = 'dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y';
  var serverKey = 'AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q';
+
 
 var fcm = new FCM(serverKey);
 
@@ -66,17 +67,50 @@ var fcm = new FCM(serverKey);
       }
   };
 
- fcm.send(message, function(err, response){
+
+
+var Worker = require('redis-queue-worker');
+ 
+var queues = ['Pending'], // One or multiple queues to watch. 
+    options = {}, // check out source for default options to override (optional). 
+    redisOptions = {}; // npm redis package options (optional). 
+ 
+var w = new Worker(queues, options, redisOptions);
+var posted = 0;
+var succeded = 0;
+var failed = 0;
+
+ w.on('error', function(err){
+    console.log(err);
+});
+w.on('message', function(queue, data) {
+    console.log(queue); // Queue name the message dropped in. 
+    posted++;
+    console.log('posted= ', posted); // Redis data string or json if possible to parse. 
+    fcm.send(message, function(err, response){
+      
       if (err) {
-          console.log("Something has gone wrong!");
+        failed++;
+        console.log("failed sent with response count: ", failed);
+          
       } else {
+          succeded++;
+          console.log("Successfully sent with response count: ", succeded);
           console.log("Successfully sent with response: ", response);
       }
   });
+});
+ 
+w.start();
+
+
+
+
+ 
  var replied = 0;
  var succeeded = 0;
  var failed = 0;
- var maxCalls = 5000;
+ var maxCalls = 0;
 
 
 // var vigourPerformance = require("vigour-performance").
