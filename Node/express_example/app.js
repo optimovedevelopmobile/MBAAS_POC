@@ -73,54 +73,58 @@ var fcm = new FCM(serverKey);
       }
   });
  var replied = 0;
- var maxCalls = 100;
-//  for(count = 0; count < maxCalls; count++){
-//     console.log("count: ", count);
-//       fcm.send(message, function(err, response){
+ var maxCalls = 10;
+
+
+// var vigourPerformance = require("vigour-performance").
+// run(
+//   () => {
+   
+//     fcm.send(message, function(err, response){
 //             if (err) {
-//                 console.log("Something has gone wrong!");
+//                // console.log("Something has gone wrong!");
 //             } else {
-//                 console.log("Successfully sent with response: ", response);
+//               //  console.log("Successfully sent with response: ", response);
 //             }
 //             replied++;
-//             console.log("replied=", replied);
+//            // console.log("replied=", replied);
 //             if(replied >= maxCalls)
 //             {
 //                console.log("Finished with", replied);
 //             }
 //         });
-//   }
 
-var vigourPerformance = require("vigour-performance").
-run(
-  () => {
-   
-    fcm.send(message, function(err, response){
+//   },
+//   (average, iterations) => {
+//     // callback 
+//     // average : subject function average run time in milliseconds, 
+//      console.log("average: ", average);
+//      console.log("iterations: ", iterations);
+//     // iterations : number of times the subject function was executed 
+//     // ) 
+//   },
+//   5000 // number of times to execute the subject function 
+// )
+
+var perf = require("vigour-performance").time;
+var startTime = perf();
+ for(count = 0; count < maxCalls; count++){
+    console.log("count: ", count);
+      fcm.send(message, function(err, response){
             if (err) {
-               // console.log("Something has gone wrong!");
+                console.log("Something has gone wrong!");
             } else {
-              //  console.log("Successfully sent with response: ", response);
+                console.log("Successfully sent with response: ", response);
             }
             replied++;
-           // console.log("replied=", replied);
+            console.log("replied=", replied);
             if(replied >= maxCalls)
             {
-               console.log("Finished with", replied);
+              var elapsed = perf(startTime);
+               console.log("Finished with elapsed = ", elapsed);
+               console.log("Finished with replied = ", replied);
             }
         });
-
-  },
-  (average, iterations) => {
-    // callback 
-    // average : subject function average run time in milliseconds, 
-     console.log("average: ", average);
-     console.log("iterations: ", iterations);
-    // iterations : number of times the subject function was executed 
-    // ) 
-  },
-  5000 // number of times to execute the subject function 
-)
-
-
+  }
 
 module.exports = app;
