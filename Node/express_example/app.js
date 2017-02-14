@@ -44,6 +44,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+var sleep = require('sleep');
 var FCM = require('fcm-node');
  var RegistrationId = 'dARiEevCnFo:APA91bFTev5UB_plXxXKmYTrkx79isGzjIeCSy0UST-KNaVQsnGICoF7qgbEYyFu-3n1y807iPNmFI5IbzIlNLpJQ6q-OMqAZmWZeEURmoO3TIlA2TmR9ZSL4Bq4INzHqPmtRsAIxg0Y';
  var serverKey = 'AAAAkwlfmpI:APA91bElre6S3XNPQUzrLjhF5zPgUJFFWHrzblzNxcIpxAgzVEoay_RdS9wTbW-99Gq8KMvd9ecimKgBjJLh_Zjbrv4wQ-Hjl_gFEOYeGNzPUjxWljH7lIwVwyXvn3QCMFEvFF-Jh9_Q';
@@ -107,10 +108,13 @@ var fcm = new FCM(serverKey);
 //   },
 //   5000 // number of times to execute the subject function 
 // )
+var maxUse =  100;
+var currUse = 0;
 
 var perf = require("vigour-performance").time;
 var startTime = perf();
  for(count = 0; count < maxCalls; count++){
+  
     console.log("count: ", count);
       fcm.send(message, function(err, response){
             if (err) {
@@ -120,6 +124,7 @@ var startTime = perf();
               succeeded++;
                 console.log("Successfully sent with response: ", response);
             }
+           
             replied++;
             console.log("replied=", replied);
             if(replied >= maxCalls)
