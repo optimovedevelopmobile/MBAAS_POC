@@ -76,7 +76,7 @@ var fcm = new FCM(serverKey);
  var replied = 0;
  var succeeded = 0;
  var failed = 0;
- var maxCalls = 10000;
+ var maxCalls = 5000;
 
 
 // var vigourPerformance = require("vigour-performance").
