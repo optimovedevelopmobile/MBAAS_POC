@@ -79,39 +79,46 @@ var w = new Worker(queues, options, redisOptions);
 var posted = 0;
 var succeded = 0;
 var failed = 0;
-
+ var total = failed + succeeded;
  w.on('error', function(err){
     console.log(err);
 });
-var perfTime = require("vigour-performance").time;
-var startTime = perfTime();
+const { time } = require('brisky-performance')
+ // array in node, ms in browser const start = time()
+
+var start;
+//var perfTime = require("vigour-performance").time;
+//var startTime = perfTime();
 w.on('message', function(queue, data) {
     console.log(queue); // Queue name the message dropped in. 
     posted++;
     if(posted == 1)
     {
+      start = time()
       
-      startTime = perfTime();
     }
     console.log('posted= ', posted); // Redis data string or json if possible to parse. 
     fcm.send(message, function(err, response){
       
       if (err) {
         failed++;
-        console.log("failed sent with response count: ", failed);
+        console.log("*** failed sent with response count: ", failed);
           
       } else {
           succeded++;
+           if(succeded >= 5000)
+          {
+            const elapsed = time(start)
+            console.log("Total Time: ", elapsed);
+            w.stop();
+          
+          }
           console.log("Successfully sent with response count: ", succeded);
           console.log("Successfully sent with response: ", response);
       }
 
-      if(failed + succeeded >= 10)
-      {
-        w.stop();
-        var elapsed = perfTime(startTime);
-        console.log("Total Time: ", startTime);
-      }
+      total = failed + succeeded;
+      
   });
 });
  
